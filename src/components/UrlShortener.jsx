@@ -1,78 +1,63 @@
 import React, { useState } from "react";
 import api from "../services/api";
-import "../styles/Form.css";
 
-export default function UrlShortener() {
-  const [urls, setUrls] = useState([{ longUrl: "", validity: "", shortcode: "" }]);
+function UrlShortener() {
+  const [urls, setUrls] = useState([""]);
   const [results, setResults] = useState([]);
   const [error, setError] = useState("");
 
-  const handleChange = (index, field, value) => {
-    const updatedUrls = [...urls];
-    updatedUrls[index][field] = value;
-    setUrls(updatedUrls);
+  const handleInputChange = (index, value) => {
+    const newUrls = [...urls];
+    newUrls[index] = value;
+    setUrls(newUrls);
   };
 
-  const addUrlField = () => {
-    if (urls.length < 5) {
-      setUrls([...urls, { longUrl: "", validity: "", shortcode: "" }]);
-    }
+  const addField = () => {
+    if (urls.length < 5) setUrls([...urls, ""]);
   };
 
-  const shortenUrls = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      const responses = await Promise.all(
-        urls.map((u) =>
-          api.post("/shorten", {
-            url: u.longUrl,
-            validity: u.validity || 30,
-            shortcode: u.shortcode || null,
-          })
-        )
-      );
-      setResults(responses.map((r) => r.data));
+      const response = await api.post("/shorten", { urls });
+      setResults(response.data);
       setError("");
     } catch (err) {
-      setError("Error shortening URLs. Please check inputs.");
+      setError("Failed to shorten URLs. Please try again.");
     }
   };
 
   return (
-    <div className="form-container">
-      <h2>Shorten up to 5 URLs</h2>
-      {urls.map((u, i) => (
-        <div key={i} className="url-box">
+    <div className="shortener-container">
+      <h2>Shorten Your URLs</h2>
+      <form onSubmit={handleSubmit}>
+        {urls.map((url, index) => (
           <input
+            key={index}
             type="url"
-            placeholder="Enter Long URL"
-            value={u.longUrl}
-            onChange={(e) => handleChange(i, "longUrl", e.target.value)}
+            value={url}
+            placeholder="Enter a URL"
+            onChange={(e) => handleInputChange(index, e.target.value)}
             required
           />
-          <input
-            type="number"
-            placeholder="Validity (minutes)"
-            value={u.validity}
-            onChange={(e) => handleChange(i, "validity", e.target.value)}
-          />
-          <input
-            type="text"
-            placeholder="Custom Shortcode"
-            value={u.shortcode}
-            onChange={(e) => handleChange(i, "shortcode", e.target.value)}
-          />
-        </div>
-      ))}
-      {urls.length < 5 && <button onClick={addUrlField}>+ Add Another URL</button>}
-      <button className="shorten-btn" onClick={shortenUrls}>Shorten</button>
+        ))}
+        {urls.length < 5 && <button type="button" onClick={addField}>Add Another</button>}
+        <button type="submit">Shorten</button>
+      </form>
+
       {error && <p className="error">{error}</p>}
+
       <div className="results">
-        {results.map((r, i) => (
-          <p key={i}>
-            Shortened: <a href={r.shortUrl}>{r.shortUrl}</a> (Expires: {r.expiry})
+        {results.map((item, index) => (
+          <p key={index}>
+            Shortened: <a href={`http://localhost:3000/${item.shortCode}`} target="_blank" rel="noreferrer">
+              http://localhost:3000/{item.shortCode}
+            </a>
           </p>
         ))}
       </div>
     </div>
   );
 }
+
+export default UrlShortener;

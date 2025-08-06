@@ -1,30 +1,24 @@
 import axios from "axios";
-import logger from "../logger";
 
 const api = axios.create({
-  baseURL: "http://localhost:5000/api", // backend API endpoint
+  baseURL: "http://localhost:3000/api",  // ✅ fixed to 3000
 });
 
-api.interceptors.request.use(
-  (config) => {
-    logger.log("API Request", config);
-    return config;
-  },
-  (error) => {
-    logger.error("API Request Error", error);
-    return Promise.reject(error);
-  }
-);
+api.interceptors.request.use((config) => {
+  console.log(`[REQUEST] ${config.method.toUpperCase()} ${config.url}`, config);
+  return config;
+});
 
 api.interceptors.response.use(
   (response) => {
-    logger.log("API Response", response);
+    console.log("[RESPONSE]:", response.data);
     return response;
   },
   (error) => {
-    logger.error("API Response Error", error);
+    console.error("[API ERROR]:", error);
     return Promise.reject(error);
   }
 );
 
 export default api;
+

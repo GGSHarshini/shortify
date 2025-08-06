@@ -1,10 +1,12 @@
+
 const logger = {
-  log: (message, data) => {
-    console.log(`[LOG] ${message}:`, data);
+  info: (message, data) => {
+    console.log(`[INFO] ${message}`, data || "");
   },
-  error: (message, data) => {
-    console.error(`[ERROR] ${message}:`, data);
+  error: (message, error) => {
+    console.error(`[ERROR] ${message}`, error || "");
   },
 };
 
 export default logger;
+
